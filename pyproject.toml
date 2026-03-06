@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eurostat-energy-balance-processing"
+version = "0.1.0"
+description = "Processing Eurostat Energy Balance to IAMC format for energy system modelling validation"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "Max Nutz", email = "max.nutz@boku.ac.at" }
+]
+dependencies = [
+    "pandas>=1.0.0",
+    "numpy>=1.18.0",
+    "pyyaml>=5.3",
+    "pypsa>=0.18.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/maxnutz/eurostat-energy-balance_processing"
+
+[project.scripts]
+eurostat-energy-balance-processing = "eurostat_energy_balance_processing.workflow:main"
+
+[tool.setuptools.packages.find]
+include = ["eurostat_energy_balance_processing*"]
+
+[tool.setuptools.package-data]
+eurostat_energy_balance_processing = ["defaults/*.yaml"]

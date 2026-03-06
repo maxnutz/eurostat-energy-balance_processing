@@ -9,6 +9,20 @@ This repository is licensed under the [MIT License](LICENSE).
 
 This package processes the Eurostat Energy Balance for a given set of defined IAMC-Variables to build a structured timeseries output and data basis for energy system model validation against the Eurostat Energy Balance.
 
+## Installation
+
+```bash
+pip install .
+```
+
+## Project structure
+
+- Package code: `eurostat_energy_balance_processing/`
+- Packaged default config: `configs/config.default.yaml`
+- User/project configs: `configs/`
+- Tests: `tests/`
+- Non-versioned resources and file inputs/outputs: `resources/`
+
 
 
  
