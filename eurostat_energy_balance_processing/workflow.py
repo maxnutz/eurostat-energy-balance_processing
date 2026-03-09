@@ -34,9 +34,8 @@ def main() -> None:
     args = build_parser().parse_args()
     config_path = resolve_config_path(args.config)
 
-    obj_processor = EB_Processor(
-        config_path=config_path,
-    )
+    processor = EB_Processor.process(config_path=config_path)
+    processor.run()
 
 
 if __name__ == "__main__":
