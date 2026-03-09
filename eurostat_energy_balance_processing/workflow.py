@@ -4,6 +4,8 @@ import argparse
 from pathlib import Path
 import yaml
 
+from eurostat_energy_balance_processing import EB_Processor
+
 
 def get_default_config_path() -> Path:
     return Path(__file__).resolve().parent.parent / "configs" / "config.default.yaml"
@@ -31,6 +33,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     config_path = resolve_config_path(args.config)
+
+    obj_processor = EB_Processor(
+        config_path=config_path,
+    )
 
 
 if __name__ == "__main__":
