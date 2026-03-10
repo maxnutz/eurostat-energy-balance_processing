@@ -1,6 +1,6 @@
 region: AT
-validation_year: 2020
-definition_path: /home/maxnutz/Documents/pypsa-at-validation/validation_pyam_structure/energy_balance_evaluation/sister_packages/energy-scenarios-at-workflow/definitions
+validation_year: 
+definition_path:
 # mapping_path:
 # eb_input_path: 
 

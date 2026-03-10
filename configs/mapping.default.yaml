@@ -1,4 +1,4 @@
-siec_dict:
+siec:
   Coal:
     - C0000X0350-0370
     - P1000
@@ -68,7 +68,7 @@ siec_dict:
   Renewables incl. Ambient Heat:
     - RA000
 
-nrg_dict:
+nrg_bal:
   Net Imports|{Final Energy Carrier}:
     - IMP
     - -EXP

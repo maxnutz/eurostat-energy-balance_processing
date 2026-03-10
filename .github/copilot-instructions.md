@@ -25,11 +25,12 @@
     │   └── test_workflow_config.py
     └── configs/
         ├── config.default.yaml
-        └── .github/
-            └── copilot-instructions.md
+    └── .github/
+        └── copilot-instructions.md
 
 ## Mandatory operating rules 
 - Prefer modifying existing modules over creating new files.
+- Directly work in the files unless stated otherwise.
 - Only create new files if no logical location exists.
 - Never duplicate functionality already present in the package.
 - Give a short overview of what you created afterwards in the chat.
