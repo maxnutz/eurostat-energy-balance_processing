@@ -166,11 +166,14 @@ class IAMC_Creator(EB_Processor):
 
     def run(self) -> None:
         """Executes IAMC processing."""
+        print("INFO: processing energy balance...")
         self.df_eb = self.fetch_and_load_eb_tsv()
         self.df_eb_with_values = self.map_eb_codes_to_calc_values()
-        self.df_eb_with_values = self.structure_pyam_from_pandas(self.df_eb_with_values)
+        self.pyam_dsd_with_values = self.structure_pyam_from_pandas(
+            self.df_eb_with_values
+        )
         write_to_excel(
-            df=self.df_eb_with_values, outputpath=self.path_definitions_with_values
+            df=self.pyam_dsd_with_values, outputpath=self.path_definitions_with_values
         )
 
     def fetch_and_load_eb_tsv(self) -> pd.DataFrame:
@@ -476,7 +479,194 @@ class Validation_Creator(EB_Processor):
 
     def __init__(self, parent_processor: EB_Processor) -> None:
         self.__dict__.update(parent_processor.__dict__)
+        self.pyam_dsd_with_values = self._load_pyam_data()
         self.validation_definitions = self.build_validation_definitions()
+        self.path_codelist_yaml = (
+            self.path_definitions_with_values.parents[0] / "validate_data.yaml"
+        )
 
-    def build_validation_definitions(self) -> dict:
-        """Builds a nomenclature.DataStructureDefinition for the validation criteria and returns as dict."""
+    def run(self) -> None:
+        """Executes the Creation of validation definitions."""
+        print("INFO: creating validation definitions...")
+        self.validation_codelist = self.build_validation_definitions()
+        self.write_to_codelist_yaml()
+
+    def _load_pyam_data(self) -> pyam.IamDataFrame:
+        """
+        Load pyam IamDataFrame from existing attribute or from file.
+
+        If `self.pyam_dsd_with_values` already exists and is a pyam.IamDataFrame,
+        return it. Otherwise, read from the Excel file created by IAMC_Creator.
+
+        Returns
+        -------
+        pyam.IamDataFrame
+            The loaded or existing IamDataFrame with calculated values.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the Excel file does not exist.
+        """
+        if hasattr(self, "pyam_dsd_with_values") and isinstance(
+            self.pyam_dsd_with_values, pyam.IamDataFrame
+        ):
+            return self.pyam_dsd_with_values
+
+        if not self.path_definitions_with_values.exists():
+            raise FileNotFoundError(
+                f"IAMC output file not found: {self.path_definitions_with_values} "
+                "and value not set. Class structure should prevent this..."
+            )
+        return pyam.IamDataFrame(self.path_definitions_with_values)
+
+    def _get_variable_tolerances(
+        self,
+        variable_name: str,
+        warning_levels: list[str],
+        default_tolerances: dict[str, float],
+        sector_tolerances: dict[str, dict[str, float]],
+        carrier_tolerances: dict[str, dict[str, float]],
+    ) -> list[dict[str, str | float]]:
+        """
+        Determine tolerances for a variable across all warning levels.
+
+        Priority: sector > carrier > default.
+
+        Parameters
+        ----------
+        variable_name : str
+            The IAMC variable name (e.g., "Primary Energy|Gas").
+        warning_levels : list[str]
+            All warning levels to include (e.g., ["low", "medium", "high", "error"]).
+        default_tolerances : dict[str, float]
+            Default tolerance values per warning level.
+        sector_tolerances : dict[str, dict[str, float]]
+            Sector-specific tolerances keyed by sector name.
+        carrier_tolerances : dict[str, dict[str, float]]
+            Carrier-specific tolerances keyed by carrier name.
+
+        Returns
+        -------
+        list[dict[str, str | float]]
+            List of dicts with "warning_level" and "rtol" keys.
+        """
+        # Extract carriers from variable name (parts between "|")
+        variable_parts = variable_name.split("|")
+
+        result: list[dict[str, str | float]] = []
+
+        for level in warning_levels:
+            # Start with default tolerance
+            rtol = default_tolerances.get(level)
+
+            # Check for carrier-specific tolerance (exact match)
+            for carrier, carrier_tols in carrier_tolerances.items():
+                if carrier in variable_parts:
+                    if level in carrier_tols:
+                        rtol = carrier_tols[level]
+                    break
+
+            # Check for sector-specific tolerance (startswith) - overrides carrier
+            for sector, sector_tols in sector_tolerances.items():
+                if variable_name.startswith(sector):
+                    if level in sector_tols:
+                        rtol = sector_tols[level]
+                    break
+
+            if rtol is not None:
+                result.append({"warning_level": level, "rtol": rtol})
+
+        return result
+
+    def build_validation_definitions(self) -> list[dict]:
+        """
+        Build validation definitions for all variables.
+
+        Creates validation entries in the following structure:
+        - variable: <variable_name>
+          year: <self.validation_year>
+          value: <calculated value for that year>
+          validation:
+            - warning_level: <level>
+              rtol: <tolerance value>
+
+        Tolerances are determined by priority:
+        1. Sector-specific (variable starts with sector name)
+        2. Carrier-specific (exact carrier match between "|")
+        3. Default from validation_tolerance
+
+        Sector tolerances override carrier tolerances for the same warning level.
+
+        Returns
+        -------
+        list[dict]
+            List of validation definition dicts ready to be written to YAML.
+        """
+        # Get tolerance configurations from config
+        default_tolerances: dict[str, float] = self.config.get(
+            "validation_tolerance", {}
+        )
+        sector_tolerances: dict[str, dict[str, float]] = (
+            self.config.get("validation_tolerance_sector", {}) or {}
+        )
+        carrier_tolerances: dict[str, dict[str, float]] = (
+            self.config.get("validation_tolerance_carrier", {}) or {}
+        )
+
+        # Get all warning levels from default tolerances
+        warning_levels = list(default_tolerances.keys())
+
+        # Get data for validation year
+        df = self.pyam_dsd_with_values.filter(year=self.validation_year).as_pandas()
+
+        validation_list: list[dict] = []
+
+        for _, row in df.iterrows():
+            variable_name = str(row["variable"])
+            value = row["value"]
+
+            # Skip if value is NaN
+            if pd.isna(value):
+                continue
+
+            # Build tolerances for this variable
+            variable_tolerances = self._get_variable_tolerances(
+                variable_name=variable_name,
+                warning_levels=warning_levels,
+                default_tolerances=default_tolerances,
+                sector_tolerances=sector_tolerances,
+                carrier_tolerances=carrier_tolerances,
+            )
+
+            # Build validation entry
+            validation_entry = {
+                "variable": variable_name,
+                "year": self.validation_year,
+                "value": float(value),
+                "validation": variable_tolerances,
+            }
+            validation_list.append(validation_entry)
+
+        return validation_list
+
+    def write_to_codelist_yaml(self) -> None:
+        """
+        Write validation codelist to YAML file.
+
+        Writes self.validation_codelist in the following structure:
+        - variable: <variable_name>
+          year: <year>
+          value: <value>
+          validation:
+            - warning_level: <level>
+              rtol: <tolerance>
+        """
+        with open(self.path_codelist_yaml, "w") as f:
+            yaml.dump(
+                self.validation_codelist,
+                f,
+                default_flow_style=False,
+                sort_keys=False,
+                allow_unicode=True,
+            )
