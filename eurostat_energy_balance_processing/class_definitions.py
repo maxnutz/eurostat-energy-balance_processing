@@ -176,6 +176,10 @@ class IAMC_Creator(EB_Processor):
             df=self.pyam_dsd_with_values, outputpath=self.path_definitions_with_values
         )
 
+        # chain the Validation_Creator.
+        validation_creator = Validation_Creator(self)
+        validation_creator.run()
+
     def fetch_and_load_eb_tsv(self) -> pd.DataFrame:
         """
         Load and parse Eurostat energy balance TSV data.
@@ -487,9 +491,12 @@ class Validation_Creator(EB_Processor):
 
     def run(self) -> None:
         """Executes the Creation of validation definitions."""
-        print("INFO: creating validation definitions...")
-        self.validation_codelist = self.build_validation_definitions()
-        self.write_to_codelist_yaml()
+        if not self.path_codelist_yaml.exists():
+            print("INFO: creating validation definitions...")
+            self.validation_codelist = self.build_validation_definitions()
+            self.write_to_codelist_yaml()
+        else:
+            print("INFO: validation definitions already exist.")
 
     def _load_pyam_data(self) -> pyam.IamDataFrame:
         """
