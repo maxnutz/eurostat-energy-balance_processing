@@ -1,4 +1,4 @@
-![Python](https://img.shields.io/badge/python-3.11-blue)  [![license](https://img.shields.io/badge/License-MIT-blue)](https://github.com/maxnutz/eurostat-energy-balance_processing/blob/master/LICENSE) [![Tests](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml/badge.svg)](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml)
+![Python](https://img.shields.io/badge/python-3.11-blue)  [![license](https://img.shields.io/badge/License-MIT-blue)](https://github.com/maxnutz/eurostat-energy-balance_processing/blob/master/LICENSE) [![pyam](https://img.shields.io/badge/pyam-iamc-blue)](https://github.com/IAMconsortium/pyam) [![Tests](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml/badge.svg)](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml)
 
 # Eurostat Energy Balance - processing
 
