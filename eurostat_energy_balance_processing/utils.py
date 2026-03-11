@@ -7,19 +7,23 @@ def write_to_excel(
     df: pyam.IamDataFrame | pd.DataFrame, outputpath: str | Path
 ) -> None:
     """Writes pyam.IamDataFrame or pandas DataFrameto an Excel file."""
-    if type(outputpath) == str:
+    if isinstance(outputpath, str):
         outputpath = Path(outputpath)
     if not str(outputpath).endswith(".xlsx"):
         outputpath = outputpath.with_suffix(".xlsx")
         print(f"WARNING: adapted outputpath to {outputpath} for xlsx-suffix.")
     if outputpath.exists():
         print(f"INFO: overwrite existing file in {outputpath}.")
-    if type(df) == pyam.IamDataFrame:
+    if isinstance(df, pyam.IamDataFrame):
         df.to_excel(outputpath)
         print("IamDataFrame written to", outputpath)
-    elif type(df) == pd.DataFrame:
+    elif isinstance(df, pd.DataFrame):
         df.to_excel(outputpath)
         print("DataFrame written to", outputpath)
+    else:
+        raise TypeError(
+            f"Unsupported type of dataframe: {type(df)}. Expected one of pyam.IamDataFrame or pd.DataFrame."
+        )
 
 
 EU27_COUNTRY_CODES = {

@@ -23,4 +23,4 @@ eurostat-energy-balance-processing = "eurostat_energy_balance_processing.workflo
 include = ["eurostat_energy_balance_processing*"]
 
 [tool.setuptools.package-data]
-eurostat_energy_balance_processing = ["defaults/*.yaml"]
+eurostat_energy_balance_processing = ["configs/*.yaml"]

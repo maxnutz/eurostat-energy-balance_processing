@@ -1,4 +1,4 @@
-![Python](https://img.shields.io/badge/python-3.11-blue)  [![license](https://img.shields.io/badge/License-MIT-blue)](https://github.com/maxnutz/eurostat-energy-balance_processing/blob/master/LICENSE) [![Tests](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/tests.yml/badge.svg)](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/tests.yml)
+![Python](https://img.shields.io/badge/python-3.11-blue)  [![license](https://img.shields.io/badge/License-MIT-blue)](https://github.com/maxnutz/eurostat-energy-balance_processing/blob/master/LICENSE) [![Tests](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/tests.yml/badge.svg)](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml)
 
 # Eurostat Energy Balance - processing
 
@@ -11,11 +11,6 @@ This package processes the Eurostat Energy Balance for a given set of defined IA
 
 ## Quick start
 
-### Installation
-
-```bash
-pip install .
-```
 ### Project environment 
 - use conda environment with
 ```bash
@@ -26,7 +21,13 @@ conda activate pyam
 - use pixi environment by adding `pixi run` before statements in cli 
 
 > [!WARNING]
-> pixi environment ist not stable at the moment, eventually, nomenclature needs to be added manually to the pixi environment with `pixi run pip install nomenclature-iamc`
+> pixi environment is not stable at the moment, eventually, nomenclature needs to be added manually to the pixi environment with `pixi run pip install nomenclature-iamc`
+
+### Installation
+
+```bash
+pip install .
+```
 
 ### Config
 - General section: 

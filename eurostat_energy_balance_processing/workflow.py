@@ -8,7 +8,7 @@ from eurostat_energy_balance_processing import EB_Processor
 
 
 def get_default_config_path() -> Path:
-    return Path(__file__).resolve().parent.parent / "configs" / "config.default.yaml"
+    return Path(__file__).resolve().parent / "configs" / "config.default.yaml"
 
 
 def resolve_config_path(config_arg: str | None) -> Path:

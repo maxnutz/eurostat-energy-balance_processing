@@ -26,9 +26,21 @@ class EB_Processor:
         self.publication_year = 2026  # TODO
         self.eb_unit = "GWh"
         self.definition_path = self.config["definition_path"]
+        if isinstance(self.definition_path, str):
+            self.definition_path = Path(self.definition_path)
+        else:
+            raise TypeError(
+                f"definition_path not set correctly in config.yaml at {self.config_path}"
+            )
+        if not self.definition_path.exists():
+            raise FileNotFoundError(
+                f"Definition folder does not exist: {self.definition_path}"
+            )
         self.definitions, self.definitions_variables = self.read_definitions()
         # take default mapping path, if non is provided in config.
-        default_mapping_path = Path("configs/mapping.default.yaml")
+        default_mapping_path = Path(
+            "eurostat_energy_balance_processing/configs/mapping.default.yaml"
+        )
         self.mapping_path = (
             self.config["mapping_path"]
             if "mapping_path" in self.config
@@ -251,7 +263,7 @@ class IAMC_Creator(EB_Processor):
         df = df[df["geo"] == self.region]
         return df
 
-    def map_eb_codes_to_calc_values(self) -> None:
+    def map_eb_codes_to_calc_values(self) -> pd.DataFrame:
         """Maps the Codes used in the Energy Balance to IAMC-Variables."""
         year_cols = [
             col for col in self.df_eb.columns if re.fullmatch(r"\d{4}", str(col))
@@ -336,11 +348,11 @@ class IAMC_Creator(EB_Processor):
 
             nrg_codes = self.mapping_variables_codes["nrg_dict"].get(template, [])
             if not nrg_codes:
-                return (pd.Series(np.nan, index=year_cols, dtype=float),)
+                return pd.Series(np.nan, index=year_cols, dtype=float)
 
             siec_codes = _get_siec_codes(placeholder_values)
             if siec_codes is None:
-                return (pd.Series(np.nan, index=year_cols, dtype=float),)
+                return pd.Series(np.nan, index=year_cols, dtype=float)
 
             if not siec_codes:
                 siec_codes = ["TOTAL"]
