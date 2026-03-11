@@ -1,10 +1,10 @@
 # Project Overview 
 
 ## Aim of the project 
-- Gets the Eurostat Energy Balance eigher via API or provided by the user, gets variable definitions as config, get project configurations in config-folder
-- Calculates the values of the defined variables using the Eurostat Energy Balance as Databasis and units defined in the variables definitions
-- Writes the output to an IAMC - formattet excel. 
-- uses the project configurations to create a nomenclature codelist to be used as validation criterium in another repository. 
+- Gets the Eurostat Energy Balance either via the API or from data provided by the user, gets variable definitions from the config, and gets project configurations from the config folder  
+- Calculates the values of the defined variables using the Eurostat Energy Balance as data basis and units defined in the variables definitions  
+- Writes the output to an IAMC-formatted Excel file. 
+- Uses the project configurations to create a nomenclature codelist to be used as a validation criterion in another repository. 
 - Processes and writes out the validation criteria to a yaml file.
 
 ## Folder structure
@@ -39,47 +39,85 @@
     - input/output format is unclear
     - multiple architectural choices exist
     - required files are missing or unclear
-- use `pixi run` in comand-line statements, to run statements in the pixi environment of the project.
+- use the conda-environment `pyam` to run statements with `conda activate pyam` 
+- DO NOT use `pixi run` in comand-line statements, to run statements in the pixi environment of the project.
 
 ### Coding conventions
 - Use type hints for all functions.
 - Add docstrings in NumPy-style format
 - Use pyam / pandas idioms instead of manual loops wherever possible 
-- Use the folderstructure and class-structure provided. The following class structure is intended (to be updated): 
+- Use the folder structure and class-structure provided. If the code requires additional Classes, functions or class methods, create them after asking the user, if creating new structures is intended. The following class structure is intended (to be updated): 
 
 ```mermaid
 classDiagram
+    class EB_Processor {
+        +str config_path
+        +dict config
+        +str region
+        +int validation_year
+        +int publication_year
+        +str eb_unit
+        +str definition_path
+        +nomenclature_DataStructureDefinition definitions
+        +pandas_DataFrame definitions_variables
+        +dict mapping_variables_codes
+        +pathlib_Path path_definitions_with_values
+        +pathlib_Path eb_input_path
+        +__init__(config_path str) None
+        +__repr__() str
+        +process(config_path str) EB_Processor
+        +read_config() dict
+        +read_definitions() tuple
+        +get_mapping_variables_codes() dict
+        +_eb_already_processed() bool
+    }
+
+    class IAMC_Creator {
+        +pandas_DataFrame df_eb
+        +pandas_DataFrame df_eb_with_values
+        +pyam_IamDataFrame pyam_dsd_with_values
+        +__init__(parent_processor EB_Processor) None
+        +run() None
+        +fetch_and_load_eb_tsv() pandas_DataFrame
+        +map_eb_codes_to_calc_values() pandas_DataFrame
+        +structure_pyam_from_pandas(df pandas_DataFrame) pyam_IamDataFrame
+    }
+
+    class Validation_Creator {
+        +pyam_IamDataFrame pyam_dsd_with_values
+        +list validation_definitions
+        +pathlib_Path path_codelist_yaml
+        +list validation_codelist
+        +__init__(parent_processor EB_Processor) None
+        +run() None
+        +_load_pyam_data() pyam_IamDataFrame
+        +_get_variable_tolerances(variable_name str, warning_levels list, default_tolerances dict, sector_tolerances dict, carrier_tolerances dict) list
+        +build_validation_definitions() list
+        +write_to_codelist_yaml() None
+    }
+
+    class utils {
+        +write_to_excel(df object, outputpath object) None
+        +dict EU27_COUNTRY_CODES
+    }
+
+    class workflow_module {
+        +get_default_config_path() pathlib_Path
+        +resolve_config_path(config_arg str) pathlib_Path
+        +build_parser() argparse_ArgumentParser
+        +main() None
+    }
+
     EB_Processor <|-- IAMC_Creator
-    EB_Processor <|-- validation_Creator
-    class EB_Processor{
-        + config_path
-        + country
-        + region
-        + validation_year
-        + publication_year
-        + definition_path
-        + definitions
-        + read_config()
-        
-    }
-    class IAMC_Creator{
-        + df_eb
-        + definitions_with_values
-        + map_eb_codes()
-        + fetch_and_load_eb_tsv()
-        + read_mapping_yaml()
-        + calculate_variables()
-        + convert_unit()
-    }
-    class validation_Creator{
-        + validation_output
-        + build_validation_structure()
-    }
+    EB_Processor <|-- Validation_Creator
+    IAMC_Creator ..> utils : uses
+    Validation_Creator ..> utils : uses
+    workflow_module ..> EB_Processor : creates
 ```
 
-### Follow-up questions
-- Ask whenever you are not shure about the goal of task any criteria or strategy.
-- Distinguish between overall questions to a task and specific questions to resolve.
+### Follow-up questions  
+- Ask whenever you are not sure about the goal of the task, any criteria, or strategy.  
+- Distinguish between overall questions to a task and specific questions to resolve.  
 - Always ask before performing command-line statements. 
 
 ## Task Completion Criteria
