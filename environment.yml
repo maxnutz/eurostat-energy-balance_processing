@@ -75,7 +75,6 @@ dependencies:
       - defusedxml==0.7.1
       - deprecation==2.1.0
       - et-xmlfile==2.0.0
-      - eurostat-energy-balance-processing==0.1.0
       - executing==2.2.1
       - fastapi==0.129.0
       - fastjsonschema==2.21.2
