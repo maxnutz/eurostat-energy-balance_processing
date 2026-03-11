@@ -1,4 +1,4 @@
-![Python](https://img.shields.io/badge/python-3.11-blue)  [![license](https://img.shields.io/badge/License-MIT-blue)](https://github.com/maxnutz/eurostat-energy-balance_processing/blob/master/LICENSE) [![Tests](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/tests.yml/badge.svg)](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml)
+![Python](https://img.shields.io/badge/python-3.11-blue)  [![license](https://img.shields.io/badge/License-MIT-blue)](https://github.com/maxnutz/eurostat-energy-balance_processing/blob/master/LICENSE) [![Tests](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml/badge.svg)](https://github.com/maxnutz/eurostat-energy-balance_processing/actions/workflows/test.yml)
 
 # Eurostat Energy Balance - processing
 
@@ -45,7 +45,9 @@ pip install .
 The evaluation is executed from the file `workflow.py`:
 ```bash
 python workflow.py
-``` 
+```
+- `--config` _optional_ path to the config-file to use. defaults to `/configs/config.default.yaml`
+- `--publication_year` _optional_ year of publication of the Eurostat Energy Balance to use. defaults to current year.
 It is organized in two steps: 
 - **Map Eurostat Energy Balance to IAMC-format:** Retrieve Eurostat Energy Balance from API, apply codes-mapping and calculate variables values. Writes an IAMC-formatted xlsx-files as output.
 - **Create basis for validation:** Create valid nomenclature-yaml-file for validation purpose.

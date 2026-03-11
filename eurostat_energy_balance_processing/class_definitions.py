@@ -8,6 +8,7 @@ from urllib.request import urlopen
 import pandas as pd
 import numpy as np
 import yaml
+from datetime import datetime
 import nomenclature
 import pyam
 
@@ -15,15 +16,20 @@ from eurostat_energy_balance_processing.utils import write_to_excel, EU27_COUNTR
 
 
 class EB_Processor:
+
     def __init__(
         self,
         config_path: str,
+        publication_year: int = None,
     ) -> None:
         self.config_path = config_path
         self.config = self.read_config()
         self.region = self.config["region"]
         self.validation_year = self.config["validation_year"]
-        self.publication_year = 2026  # TODO
+        current_year = datetime.now().year
+        self.publication_year = (
+            publication_year if publication_year is not None else current_year
+        )
         self.eb_unit = "GWh"
         self.definition_path = self.config["definition_path"]
         if isinstance(self.definition_path, str):
@@ -69,7 +75,9 @@ class EB_Processor:
         )
 
     @classmethod
-    def process(cls, config_path: str) -> "IAMC_Creator | Validation_Creator":
+    def process(
+        cls, config_path: str, publication_year: int = None
+    ) -> "IAMC_Creator | Validation_Creator":
         """Factory method to create appropriate processor based on state.
 
         Parameters
@@ -83,7 +91,7 @@ class EB_Processor:
             Returns IAMC_Creator if energy balance needs processing,
             Validation_Creator if already processed.
         """
-        base = cls(config_path)
+        base = cls(config_path, publication_year)
 
         if base._eb_already_processed():
             return Validation_Creator(base)
