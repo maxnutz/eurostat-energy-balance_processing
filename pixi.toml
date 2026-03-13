@@ -11,7 +11,6 @@ test-quick = "pytest tests/ -v"
 
 [dependencies]
 python = ">=3.11"
-pandas = ">=1.0.0"
 numpy = ">=1.18.0"
 pyyaml = ">=5.3"
 pytest = ">=7.0"
@@ -19,9 +18,9 @@ pytest-cov = ">=4.0"
 pytest-mock = ">=3.0"
 openpyxl = ">=3.0"
 requests = ">=2.20"
-pyam-iamc = ">=2.0.0,<3"
 
 [pypi-dependencies]
+pandas = ">=1.0.0"
 pyam-iamc = ">=2.0.0"
-nomenclature-iamc = ">=0.10"
+nomenclature-iamc = ">=0.29"
 eurostat-energy-balance-processing = { path = ".", editable = true }
