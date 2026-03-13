@@ -49,7 +49,7 @@ python workflow.py
 - `--config` _optional_ path to the config-file to use. defaults to `/configs/config.default.yaml`
 - `--publication_year` _optional_ year of publication of the Eurostat Energy Balance to use. defaults to current year.
 It is organized in two steps: 
-- **Map Eurostat Energy Balance to IAMC-format:** Retrieve Eurostat Energy Balance from API, apply codes-mapping and calculate variables values. Writes an IAMC-formatted xlsx-files as output.
+- **Map Eurostat Energy Balance to IAMC-format:** Retrieve Eurostat Energy Balance from API, apply code mappings and calculate variable values. Writes IAMC-formatted xlsx files as output.
 - **Create basis for validation:** Create valid nomenclature-yaml-file for validation purpose.
 
 ### Run tests
