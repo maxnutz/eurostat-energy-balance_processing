@@ -1,0 +1,25 @@
+region: AT
+validation_year: 
+definition_path:
+# mapping_path:
+# eb_input_path: 
+
+# relative validation tolerance:
+validation_tolerance:
+  low: 0.3
+  medium: 0.4
+  high: 0.5
+  error: 1
+
+# Add special tolerances for special accounting levels:
+# distinguish between warning levels: error, high, medium, low.
+validation_tolerance_sector:
+  Final Energy:
+    low : 0.05
+
+# Add special tolerances for special accounting carriers
+validation_tolerance_carrier:
+  Electricity:
+    low : 0.03
+
+
