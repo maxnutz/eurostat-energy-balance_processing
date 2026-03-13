@@ -25,7 +25,7 @@ class EB_Processor:
         self.config_path = config_path
         self.config = self.read_config()
         self.region = self.config["region"]
-        self.validation_year = self.config["validation_year"]
+        self.validation_year = self.config.get("validation_year", 2020)
         current_year = datetime.now().year
         self.publication_year = (
             publication_year if publication_year is not None else current_year

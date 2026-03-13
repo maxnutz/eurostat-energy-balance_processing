@@ -19,7 +19,7 @@ def resolve_config_path(config_arg: str | None) -> Path:
     return get_default_config_path()
 
 
-def resolve_publication_year(publication_year_arg: int | None) -> int:
+def resolve_publication_year(publication_year_arg: int | None) -> int | None:
     if publication_year_arg:
         return publication_year_arg
     else:

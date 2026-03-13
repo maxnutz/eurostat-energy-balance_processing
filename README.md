@@ -32,7 +32,7 @@ pip install .
 ### Config
 - General section: 
     - region: one of EU-27 countries, list of valid entries to be found [here](https://github.com/maxnutz/eurostat-energy-balance_processing/blob/e513c6bda1ee25c1e73eba4de1685f1c716511b2/eurostat_energy_balance_processing/utils.py#L25)
-    - validation_year: year to be used to extract the data from for the validation outputs
+    - validation_year: year to be used to extract the data from for the validation outputs _defaults to 2020_
     - definition_path: folderpath to variables definition-folder. no default!
     - mapping_path: filepath to yaml-file including the mapping of Eurostat codes to IAMC-Variable-parts. _defaults to config/mapping.default.yaml_
 - validation tolerance: general validation tolerances to be used for all variables. [low, medium, high, error] refers to the respective warning levels.
