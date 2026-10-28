@@ -12,7 +12,11 @@ from datetime import datetime
 import nomenclature
 import pyam
 
-from eurostat_energy_balance_processing.utils import write_to_excel, EU27_COUNTRY_CODES
+from eurostat_energy_balance_processing.utils import (
+    write_to_excel,
+    calculate_industry_non_energy_shares,
+    EU27_COUNTRY_CODES,
+)
 
 
 class EB_Processor:
@@ -66,6 +70,14 @@ class EB_Processor:
             Path(self.config["eb_input_path"])
             if "eb_input_path" in self.config
             else default_eb_input_path
+        )
+        default_path_industry_non_energy_shares = Path(
+            f"resources/industry_non_energy_shares_{self.publication_year}.csv"
+        )
+        self.path_industry_non_energy_shares = (
+            Path(self.config["path_industry_non_energy_shares"])
+            if "path_industry_non_energy_shares" in self.config
+            else default_path_industry_non_energy_shares
         )
 
     def __repr__(self) -> str:
@@ -200,7 +212,7 @@ class IAMC_Creator(EB_Processor):
         validation_creator = Validation_Creator(self)
         validation_creator.run()
 
-    def fetch_and_load_eb_tsv(self) -> pd.DataFrame:
+    def fetch_and_load_eb_tsv(self, all_regions: bool = False) -> pd.DataFrame:
         """
         Load and parse Eurostat energy balance TSV data.
 
@@ -210,9 +222,8 @@ class IAMC_Creator(EB_Processor):
 
         Parameters
         ----------
-        filepath_tsv : str | None, optional
-            overwrites the default filepath. If file does not exist, API download
-            saves to that location.
+        all_regions : bool, optional
+            if True, keep all regions instead of only the configured region.
 
         Returns
         -------
@@ -268,8 +279,21 @@ class IAMC_Creator(EB_Processor):
                     df[year_col].replace(":", np.nan), errors="coerce"
                 )
         df = df[df["unit"] == self.eb_unit.upper()]
-        df = df[df["geo"] == self.region]
+        if not all_regions:
+            df = df[df["geo"] == self.region]
         return df
+
+    def write_industry_non_energy_shares(self) -> None:
+        """Writes the non-energy shares of industrial final consumption of all regions to csv."""
+        print("INFO: calculating industry non-energy shares...")
+        df_eb_all = self.fetch_and_load_eb_tsv(all_regions=True)
+        shares = calculate_industry_non_energy_shares(df_eb_all)
+        self.path_industry_non_energy_shares.parent.mkdir(parents=True, exist_ok=True)
+        shares.to_csv(self.path_industry_non_energy_shares, index=False)
+        print(
+            "Industry non-energy shares written to",
+            self.path_industry_non_energy_shares,
+        )
 
     def map_eb_codes_to_calc_values(self) -> pd.DataFrame:
         """Maps the Codes used in the Energy Balance to IAMC-Variables."""

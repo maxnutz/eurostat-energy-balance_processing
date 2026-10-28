@@ -51,6 +51,7 @@ python workflow.py
 It is organized in two steps: 
 - **Map Eurostat Energy Balance to IAMC-format:** Retrieve Eurostat Energy Balance from API, apply code mappings and calculate variable values. Writes IAMC-formatted xlsx files as output.
 - **Create basis for validation:** Create valid nomenclature-yaml-file for validation purpose.
+- **Industry non-energy shares:** Writes `FC_IND_NE / (FC_IND_E + FC_IND_NE)` per country, carrier (`Natural Gas`: `G3000`, `Oil`: `O4000XBIO`) and year for all regions to `resources/industry_non_energy_shares_{publication_year}.csv` (overwrite with `path_industry_non_energy_shares` in the config). Columns: `country, carrier, siec, year, unit, energy_use, non_energy_use, non_energy_share`. The file is the interface to [pypsa-validation_processing](https://github.com/maxnutz/pypsa_validation_processing); keep the column names stable.
 
 ### Run tests
 

@@ -8,7 +8,12 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from eurostat_energy_balance_processing.utils import EU27_COUNTRY_CODES, write_to_excel
+from eurostat_energy_balance_processing.utils import (
+    EU27_COUNTRY_CODES,
+    INDUSTRY_NON_ENERGY_SIEC,
+    calculate_industry_non_energy_shares,
+    write_to_excel,
+)
 
 
 class TestEU27CountryCodes:
@@ -112,3 +117,62 @@ class TestWriteToExcel:
         # Verify overwrite message was printed
         calls = [str(call) for call in mock_print.call_args_list]
         assert any("overwrite" in call.lower() for call in calls)
+
+
+class TestCalculateIndustryNonEnergyShares:
+    """Tests for calculate_industry_non_energy_shares function."""
+
+    @staticmethod
+    def _eb(rows: list[tuple[str, str, str, float, float]]) -> pd.DataFrame:
+        return pd.DataFrame(
+            rows, columns=["nrg_bal", "siec", "geo", "2023", "2024"]
+        ).assign(freq="A", unit="GWH")
+
+    def test_share_per_country_carrier_and_year(self) -> None:
+        df = self._eb(
+            [
+                ("FC_IND_E", "G3000", "AT", 90.0, 75.0),
+                ("FC_IND_NE", "G3000", "AT", 10.0, 25.0),
+                ("FC_IND_E", "O4000XBIO", "DE", 20.0, 20.0),
+                ("FC_IND_NE", "O4000XBIO", "DE", 80.0, 60.0),
+            ]
+        )
+        result = calculate_industry_non_energy_shares(df)
+        assert list(result.columns) == [
+            "country",
+            "carrier",
+            "siec",
+            "year",
+            "unit",
+            "energy_use",
+            "non_energy_use",
+            "non_energy_share",
+        ]
+        shares = result.set_index(["country", "carrier", "year"])["non_energy_share"]
+        assert shares[("AT", "Natural Gas", 2023)] == pytest.approx(0.1)
+        assert shares[("AT", "Natural Gas", 2024)] == pytest.approx(0.25)
+        assert shares[("DE", "Oil", 2024)] == pytest.approx(0.75)
+        assert len(result) == 4
+
+    def test_drops_missing_and_zero_denominator(self) -> None:
+        df = self._eb(
+            [
+                ("FC_IND_E", "G3000", "AT", 0.0, float("nan")),
+                ("FC_IND_NE", "G3000", "AT", 0.0, 5.0),
+            ]
+        )
+        assert calculate_industry_non_energy_shares(df).empty
+
+    def test_ignores_other_balances_and_carriers(self) -> None:
+        df = self._eb(
+            [
+                ("FC_IND_E", "G3000", "AT", 1.0, 1.0),
+                ("FC_IND_NE", "G3000", "AT", 1.0, 1.0),
+                ("FC_NE", "G3000", "AT", 99.0, 99.0),
+                ("FC_IND_E", "C0311", "AT", 5.0, 5.0),
+                ("FC_IND_NE", "C0311", "AT", 5.0, 5.0),
+            ]
+        )
+        result = calculate_industry_non_energy_shares(df)
+        assert set(result["siec"]) == {INDUSTRY_NON_ENERGY_SIEC["Natural Gas"]}
+        assert (result["non_energy_share"] == 0.5).all()

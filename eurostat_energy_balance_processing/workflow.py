@@ -5,6 +5,7 @@ from pathlib import Path
 import yaml
 
 from eurostat_energy_balance_processing import EB_Processor
+from eurostat_energy_balance_processing.class_definitions import IAMC_Creator
 
 
 def get_default_config_path() -> Path:
@@ -52,6 +53,8 @@ def main() -> None:
         config_path=config_path, publication_year=publication_year
     )
     processor.run()
+    if not processor.path_industry_non_energy_shares.exists():
+        IAMC_Creator(processor).write_industry_non_energy_shares()
 
 
 if __name__ == "__main__":

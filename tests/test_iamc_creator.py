@@ -71,6 +71,39 @@ class TestIAMCCreatorInit:
         assert hasattr(creator, "mapping_variables_codes")
 
 
+class TestIAMCCreatorWriteIndustryNonEnergyShares:
+    """Tests for IAMC_Creator.write_industry_non_energy_shares method."""
+
+    def test_writes_shares_of_all_regions(
+        self,
+        tmp_path: Path,
+        mock_config_dict: dict[str, Any],
+        mock_mapping_dict: dict,
+        mock_definitions_variables_df: pd.DataFrame,
+    ) -> None:
+        """Shares are written to csv for all regions, not only the configured one."""
+        tsv_file = tmp_path / "eb_input.tsv"
+        tsv_content = "freq\tnrg_bal\tsiec\tunit\tgeo\\TIME_PERIOD\t2024\n"
+        tsv_content += "A\tFC_IND_E\tG3000\tGWH\tAT\t90\n"
+        tsv_content += "A\tFC_IND_NE\tG3000\tGWH\tAT\t10\n"
+        tsv_content += "A\tFC_IND_E\tG3000\tGWH\tDE\t50\n"
+        tsv_content += "A\tFC_IND_NE\tG3000\tGWH\tDE\t50\n"
+        tsv_file.write_text(tsv_content, encoding="utf-8")
+
+        parent = create_mock_eb_processor(
+            tmp_path, mock_config_dict, mock_mapping_dict, mock_definitions_variables_df
+        )
+        parent.eb_input_path = tsv_file
+        parent.path_industry_non_energy_shares = tmp_path / "out" / "shares.csv"
+
+        IAMC_Creator(parent).write_industry_non_energy_shares()
+
+        result = pd.read_csv(parent.path_industry_non_energy_shares)
+        shares = result.set_index("country")["non_energy_share"]
+        assert shares["AT"] == pytest.approx(0.1)
+        assert shares["DE"] == pytest.approx(0.5)
+
+
 class TestIAMCCreatorFetchAndLoadEbTsv:
     """Tests for IAMC_Creator.fetch_and_load_eb_tsv method."""
 
