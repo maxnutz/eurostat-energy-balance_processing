@@ -35,15 +35,26 @@ EUROSTAT_TO_ISO_COUNTRY_CODES = {
 INDUSTRY_NON_ENERGY_SIEC = {
     "Natural Gas": "G3000",
     "Oil": "O4000XBIO",
+    "Coal": "C0000X0350-0370",
+}
+
+# Balance of the non-energy use per carrier. Eurostat reports no industrial
+# non-energy use (FC_IND_NE) for solid fossil fuels, so for coal the
+# non-energy use of all sectors (FC_NE) is used.
+INDUSTRY_NON_ENERGY_BALANCE = {
+    "Natural Gas": "FC_IND_NE",
+    "Oil": "FC_IND_NE",
+    "Coal": "FC_NE",
 }
 
 
 def calculate_industry_non_energy_shares(df_eb: pd.DataFrame) -> pd.DataFrame:
     """Calculate the non-energy share of industrial final consumption.
 
-    The share is ``FC_IND_NE / (FC_IND_E + FC_IND_NE)`` per country, carrier
-    and year for the carriers in ``INDUSTRY_NON_ENERGY_SIEC``. Combinations
-    with a missing value or a zero denominator are dropped.
+    The share is ``NE / (FC_IND_E + NE)`` per country, carrier and year for
+    the carriers in ``INDUSTRY_NON_ENERGY_SIEC``, with ``NE`` the balance in
+    ``INDUSTRY_NON_ENERGY_BALANCE`` (``FC_IND_NE``; ``FC_NE`` for coal).
+    Combinations with a missing value or a zero denominator are dropped.
 
     Parameters
     ----------
@@ -60,10 +71,12 @@ def calculate_industry_non_energy_shares(df_eb: pd.DataFrame) -> pd.DataFrame:
     """
     year_columns = [col for col in df_eb.columns if str(col).isdigit()]
     siec_to_carrier = {v: k for k, v in INDUSTRY_NON_ENERGY_SIEC.items()}
-    df = df_eb[
-        df_eb["nrg_bal"].isin(["FC_IND_E", "FC_IND_NE"])
-        & df_eb["siec"].isin(siec_to_carrier)
-    ]
+    df = df_eb[df_eb["siec"].isin(siec_to_carrier)]
+    non_energy_balance = (
+        df["siec"].map(siec_to_carrier).map(INDUSTRY_NON_ENERGY_BALANCE)
+    )
+    df = df[(df["nrg_bal"] == "FC_IND_E") | (df["nrg_bal"] == non_energy_balance)]
+    df = df.assign(nrg_bal=df["nrg_bal"].where(df["nrg_bal"] == "FC_IND_E", "NE"))
     long = df.melt(
         id_vars=["nrg_bal", "siec", "unit", "geo"],
         value_vars=year_columns,
@@ -74,9 +87,9 @@ def calculate_industry_non_energy_shares(df_eb: pd.DataFrame) -> pd.DataFrame:
         columns="nrg_bal",
         values="value",
         aggfunc="first",
-    ).reindex(columns=["FC_IND_E", "FC_IND_NE"])
-    total = wide["FC_IND_E"] + wide["FC_IND_NE"]
-    wide["non_energy_share"] = wide["FC_IND_NE"] / total.where(total != 0)
+    ).reindex(columns=["FC_IND_E", "NE"])
+    total = wide["FC_IND_E"] + wide["NE"]
+    wide["non_energy_share"] = wide["NE"] / total.where(total != 0)
     wide = wide.dropna().reset_index()
     result = pd.DataFrame(
         {
@@ -86,7 +99,7 @@ def calculate_industry_non_energy_shares(df_eb: pd.DataFrame) -> pd.DataFrame:
             "year": wide["year"].astype(int),
             "unit": wide["unit"],
             "energy_use": wide["FC_IND_E"],
-            "non_energy_use": wide["FC_IND_NE"],
+            "non_energy_use": wide["NE"],
             "non_energy_share": wide["non_energy_share"],
         }
     )
