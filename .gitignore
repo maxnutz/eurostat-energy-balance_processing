@@ -4,6 +4,14 @@
 
 # git
 .gitattributes
+.gitignore
+.vscode
+src
 
 # resources
 resources
+config.mnutz.yaml
+
+# python logs
+*.egg-info
+__pycache__
