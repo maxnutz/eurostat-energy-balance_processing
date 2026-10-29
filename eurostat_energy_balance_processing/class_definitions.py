@@ -29,7 +29,15 @@ class EB_Processor:
     ) -> None:
         self.config_path = config_path
         self.config = self.read_config()
-        self.region = self.config["region"]
+        # accept Eurostat codes (EL, UK) in the config, matching the ISO codes in the data
+        self.region = EUROSTAT_TO_ISO_COUNTRY_CODES.get(
+            self.config["region"], self.config["region"]
+        )
+        if self.region not in EU27_COUNTRY_CODES:
+            raise ValueError(
+                f"region '{self.config['region']}' in {self.config_path} is not supported. "
+                f"Allowed country codes: {', '.join(EU27_COUNTRY_CODES)}"
+            )
         self.validation_year = self.config.get("validation_year", 2020)
         current_year = datetime.now().year
         self.publication_year = (
