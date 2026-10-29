@@ -190,3 +190,15 @@ class TestCalculateIndustryNonEnergyShares:
         assert set(result["carrier"]) == {"Coal"}
         assert shares[("Coal", 2023)] == pytest.approx(0.1)
         assert shares[("Coal", 2024)] == pytest.approx(0.25)
+
+    def test_drops_aggregate_geographies(self) -> None:
+        df = self._eb(
+            [
+                ("FC_IND_E", "G3000", "AT", 1.0, 1.0),
+                ("FC_IND_NE", "G3000", "AT", 1.0, 1.0),
+                ("FC_IND_E", "G3000", "EU27_2020", 1.0, 1.0),
+                ("FC_IND_NE", "G3000", "EU27_2020", 1.0, 1.0),
+            ]
+        )
+        result = calculate_industry_non_energy_shares(df)
+        assert set(result["country"]) == {"AT"}

@@ -54,7 +54,8 @@ def calculate_industry_non_energy_shares(df_eb: pd.DataFrame) -> pd.DataFrame:
     The share is ``NE / (FC_IND_E + NE)`` per country, carrier and year for
     the carriers in ``INDUSTRY_NON_ENERGY_SIEC``, with ``NE`` the balance in
     ``INDUSTRY_NON_ENERGY_BALANCE`` (``FC_IND_NE``; ``FC_NE`` for coal).
-    Combinations with a missing value or a zero denominator are dropped.
+    Aggregate geographies (e.g. ``EU27_2020``) and combinations with a
+    missing value or a zero denominator are dropped.
 
     Parameters
     ----------
@@ -71,7 +72,10 @@ def calculate_industry_non_energy_shares(df_eb: pd.DataFrame) -> pd.DataFrame:
     """
     year_columns = [col for col in df_eb.columns if str(col).isdigit()]
     siec_to_carrier = {v: k for k, v in INDUSTRY_NON_ENERGY_SIEC.items()}
-    df = df_eb[df_eb["siec"].isin(siec_to_carrier)]
+    # Keep two-letter country codes only, dropping aggregates like EU27_2020
+    df = df_eb[
+        df_eb["siec"].isin(siec_to_carrier) & df_eb["geo"].str.fullmatch(r"[A-Z]{2}")
+    ]
     non_energy_balance = (
         df["siec"].map(siec_to_carrier).map(INDUSTRY_NON_ENERGY_BALANCE)
     )
