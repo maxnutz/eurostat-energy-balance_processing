@@ -94,6 +94,47 @@ class TestEBProcessorInit:
         assert "2020" in repr_str
 
 
+    @pytest.mark.parametrize("region", ["XX", "UK", "EU27_2020"])
+    def test_eb_processor_init_unsupported_region_raises(
+        self, tmp_path: Path, mock_config_dict: dict[str, Any], region: str
+    ) -> None:
+        """Regions not in EU27_COUNTRY_CODES raise and list the allowed codes."""
+        config_file = tmp_path / "config.yaml"
+        mock_config_dict["region"] = region
+        config_file.write_text(yaml.dump(mock_config_dict), encoding="utf-8")
+
+        with pytest.raises(ValueError, match="Allowed country codes: AT, BE"):
+            EB_Processor(config_path=str(config_file))
+
+    def test_eb_processor_init_maps_eurostat_region_to_iso(
+        self,
+        tmp_path: Path,
+        mock_config_dict: dict[str, Any],
+        mock_mapping_dict: dict,
+        mock_definitions_variables_df: pd.DataFrame,
+    ) -> None:
+        """Eurostat code EL in the config is mapped to ISO code GR."""
+        config_file = tmp_path / "config.yaml"
+        mock_config_dict["region"] = "EL"
+        mock_config_dict["definition_path"] = str(tmp_path / "definitions")
+        mock_config_dict["mapping_path"] = str(tmp_path / "mapping.yaml")
+        config_file.write_text(yaml.dump(mock_config_dict), encoding="utf-8")
+        (tmp_path / "definitions").mkdir()
+        (tmp_path / "mapping.yaml").write_text(
+            yaml.dump(mock_mapping_dict), encoding="utf-8"
+        )
+        mock_dsd = MagicMock()
+        mock_dsd.variable.to_pandas.return_value = mock_definitions_variables_df
+
+        with patch(
+            "eurostat_energy_balance_processing.class_definitions.nomenclature.DataStructureDefinition",
+            return_value=mock_dsd,
+        ):
+            processor = EB_Processor(config_path=str(config_file))
+
+        assert processor.region == "GR"
+
+
 class TestEBProcessorProcess:
     """Tests for EB_Processor.process factory method."""
 

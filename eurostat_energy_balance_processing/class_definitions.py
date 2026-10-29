@@ -16,6 +16,7 @@ from eurostat_energy_balance_processing.utils import (
     write_to_excel,
     calculate_industry_non_energy_shares,
     EU27_COUNTRY_CODES,
+    EUROSTAT_TO_ISO_COUNTRY_CODES,
 )
 
 
@@ -28,7 +29,15 @@ class EB_Processor:
     ) -> None:
         self.config_path = config_path
         self.config = self.read_config()
-        self.region = self.config["region"]
+        # accept Eurostat codes (EL, UK) in the config, matching the ISO codes in the data
+        self.region = EUROSTAT_TO_ISO_COUNTRY_CODES.get(
+            self.config["region"], self.config["region"]
+        )
+        if self.region not in EU27_COUNTRY_CODES:
+            raise ValueError(
+                f"region '{self.config['region']}' in {self.config_path} is not supported. "
+                f"Allowed country codes: {', '.join(EU27_COUNTRY_CODES)}"
+            )
         self.validation_year = self.config.get("validation_year", 2020)
         current_year = datetime.now().year
         self.publication_year = (
@@ -266,6 +275,9 @@ class IAMC_Creator(EB_Processor):
         # If the special combined geo column is present, rename it to 'geo'
         if "geo\\TIME_PERIOD" in df.columns and "geo" not in df.columns:
             df.rename(columns={"geo\\TIME_PERIOD": "geo"}, inplace=True)
+
+        # Use ISO 3166-1 alpha-2 codes (e.g. GR, GB) instead of Eurostat codes (EL, UK)
+        df["geo"] = df["geo"].replace(EUROSTAT_TO_ISO_COUNTRY_CODES)
 
         # Set column names properly (after renaming) for later logic
         col_names = list(df.columns)

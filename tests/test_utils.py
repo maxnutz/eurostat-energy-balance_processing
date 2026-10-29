@@ -176,3 +176,29 @@ class TestCalculateIndustryNonEnergyShares:
         result = calculate_industry_non_energy_shares(df)
         assert set(result["siec"]) == {INDUSTRY_NON_ENERGY_SIEC["Natural Gas"]}
         assert (result["non_energy_share"] == 0.5).all()
+
+    def test_coal_uses_non_energy_use_of_all_sectors(self) -> None:
+        df = self._eb(
+            [
+                ("FC_IND_E", "C0000X0350-0370", "AT", 90.0, 90.0),
+                ("FC_IND_NE", "C0000X0350-0370", "AT", 99.0, 99.0),
+                ("FC_NE", "C0000X0350-0370", "AT", 10.0, 30.0),
+            ]
+        )
+        result = calculate_industry_non_energy_shares(df)
+        shares = result.set_index(["carrier", "year"])["non_energy_share"]
+        assert set(result["carrier"]) == {"Coal"}
+        assert shares[("Coal", 2023)] == pytest.approx(0.1)
+        assert shares[("Coal", 2024)] == pytest.approx(0.25)
+
+    def test_drops_aggregate_geographies(self) -> None:
+        df = self._eb(
+            [
+                ("FC_IND_E", "G3000", "AT", 1.0, 1.0),
+                ("FC_IND_NE", "G3000", "AT", 1.0, 1.0),
+                ("FC_IND_E", "G3000", "EU27_2020", 1.0, 1.0),
+                ("FC_IND_NE", "G3000", "EU27_2020", 1.0, 1.0),
+            ]
+        )
+        result = calculate_industry_non_energy_shares(df)
+        assert set(result["country"]) == {"AT"}

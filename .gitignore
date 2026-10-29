@@ -7,3 +7,8 @@
 
 # resources
 resources
+src
+
+# python build artifacts
+*.egg-info
+__pycache__
