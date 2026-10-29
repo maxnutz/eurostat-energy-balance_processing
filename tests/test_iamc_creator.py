@@ -103,6 +103,33 @@ class TestIAMCCreatorWriteIndustryNonEnergyShares:
         assert shares["AT"] == pytest.approx(0.1)
         assert shares["DE"] == pytest.approx(0.5)
 
+    def test_eurostat_codes_mapped_to_iso(
+        self,
+        tmp_path: Path,
+        mock_config_dict: dict[str, Any],
+        mock_mapping_dict: dict,
+        mock_definitions_variables_df: pd.DataFrame,
+    ) -> None:
+        """Eurostat codes EL and UK are written as ISO codes GR and GB."""
+        tsv_file = tmp_path / "eb_input.tsv"
+        tsv_content = "freq\tnrg_bal\tsiec\tunit\tgeo\\TIME_PERIOD\t2024\n"
+        for geo in ["EL", "UK"]:
+            tsv_content += f"A\tFC_IND_E\tO4000XBIO\tGWH\t{geo}\t75\n"
+            tsv_content += f"A\tFC_IND_NE\tO4000XBIO\tGWH\t{geo}\t25\n"
+        tsv_file.write_text(tsv_content, encoding="utf-8")
+
+        parent = create_mock_eb_processor(
+            tmp_path, mock_config_dict, mock_mapping_dict, mock_definitions_variables_df
+        )
+        parent.eb_input_path = tsv_file
+        parent.path_industry_non_energy_shares = tmp_path / "shares.csv"
+
+        IAMC_Creator(parent).write_industry_non_energy_shares()
+
+        result = pd.read_csv(parent.path_industry_non_energy_shares)
+        assert set(result["country"]) == {"GR", "GB"}
+        assert (result["non_energy_share"] == 0.25).all()
+
 
 class TestIAMCCreatorFetchAndLoadEbTsv:
     """Tests for IAMC_Creator.fetch_and_load_eb_tsv method."""

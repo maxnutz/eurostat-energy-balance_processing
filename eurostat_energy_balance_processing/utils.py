@@ -26,6 +26,12 @@ def write_to_excel(
         )
 
 
+# Eurostat geo codes that differ from ISO 3166-1 alpha-2 (used by PyPSA)
+EUROSTAT_TO_ISO_COUNTRY_CODES = {
+    "EL": "GR",
+    "UK": "GB",
+}
+
 INDUSTRY_NON_ENERGY_SIEC = {
     "Natural Gas": "G3000",
     "Oil": "O4000XBIO",
