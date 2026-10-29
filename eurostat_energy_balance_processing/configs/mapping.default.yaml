@@ -1,0 +1,113 @@
+siec:
+  Coal:
+    - C0000X0350-0370
+    - P1000
+  Oil:
+    - O4000XBIO
+  Natural Gas:
+    - G3000
+  Biomass:
+    - R5110-5150_W6000RI
+    - R5160
+    - R5300
+  Biogas:
+    - R5300
+  E-Methane: []
+  Hydro:
+    - RA100
+  Solar:
+    - RA420
+  Wind:
+    - RA300
+  Geothermal:
+    - RA200
+  Waste:
+    - W6100_6220
+  Other Renewables:
+    - RA500
+  Electricity:
+    - E7000
+  Biofuels:
+    - R5210P
+    - R5220P
+    - R5230P
+    - R5290
+    - R5160
+  E-Fuels:
+    - null
+  Biomethane:
+    - R5300
+  Hydrogen:
+    - null
+  Solar Thermal:
+    - RA410
+  District Heat:
+    - H8000
+  Ambient Heat:
+    - RA600
+  Other:
+    - null
+  Renewables:
+    - RA100
+    - RA500
+    - RA300
+    - RA420
+    - RA410
+    - RA200
+    - R5110-5150_W6000RI
+    - R5160
+    - R5300
+    - W6210
+    - R5210P
+    - R5210B
+    - R5220P
+    - R5220B
+    - R5230P
+    - R5230B
+    - R5290
+  Renewables incl. Ambient Heat:
+    - RA000
+
+nrg_bal:
+  Net Imports|{Final Energy Carrier}:
+    - IMP
+    - -EXP
+  Final Energy:
+    - FC_E
+  Final Energy [by Carrier]|{Final Energy Carrier}:
+    - FC_E
+  Final Energy [by Sector]|Agriculture:
+    - FC_OTH_AF_E
+  Final Energy [by Sector]|Agriculture|{Final Energy Carrier}:
+    - FC_OTH_AF_E
+  Final Energy [by Sector]|Industry:
+    - FC_IND_E
+  Final Energy [by Sector]|Industry|{Final Energy Carrier}:
+    - FC_IND_E
+  Final Energy [by Sector]|Residential and Commercial:
+    - FC_OTH_CP_E
+    - FC_OTH_HH_E
+  Final Energy [by Sector]|Residential and Commercial|{Final Energy Carrier}:
+    - FC_OTH_CP_E
+    - FC_OTH_HH_E
+  Final Energy [by Sector]|Transportation:
+    - FC_TRA_RAIL_E
+    - FC_TRA_ROAD_E
+    - FC_TRA_DAVI_E
+    - FC_TRA_DNAVI_E
+    - FC_TRA_NSP_E
+  Final Energy [by Sector]|Transportation|{Final Energy Carrier}:
+    - FC_TRA_RAIL_E
+    - FC_TRA_ROAD_E
+    - FC_TRA_DAVI_E
+    - FC_TRA_DNAVI_E
+    - FC_TRA_NSP_E
+  Final Energy [by Sector]|{Sector}: []
+  Final Energy [by Sector]|{Sector}|{Final Energy Carrier}: []
+  Secondary Energy|Electricity:
+    - GEP
+  Secondary Energy|Electricity|{Electricity Generation by Source}:
+    - TI_EHG_MAPE_E
+    - TI_EHG_MAPCHP_E
+    - TI_EHG_APE_E
+    - TI_EHG_APCHP_E

@@ -1,0 +1,26 @@
+[workspace]
+authors = ["Max Nutz <max.nutz@boku.ac.at>"]
+channels = ["conda-forge"]
+name = "eurostat-energy-balance_processing"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+test = "pytest tests/ -v --cov=eurostat_energy_balance_processing --cov-report=term-missing"
+test-quick = "pytest tests/ -v"
+
+[dependencies]
+python = ">=3.11"
+numpy = ">=1.18.0"
+pyyaml = ">=5.3"
+pytest = ">=7.0"
+pytest-cov = ">=4.0"
+pytest-mock = ">=3.0"
+openpyxl = ">=3.0"
+requests = ">=2.20"
+
+[pypi-dependencies]
+pandas = ">=1.0.0"
+pyam-iamc = ">=2.0.0"
+nomenclature-iamc = ">=0.29"
+eurostat-energy-balance-processing = { path = ".", editable = true }

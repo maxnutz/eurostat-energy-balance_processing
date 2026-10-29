@@ -1,0 +1,9 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+# git
+.gitattributes
+
+# resources
+resources
