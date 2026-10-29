@@ -101,6 +101,9 @@ class TestMain:
                 "eurostat_energy_balance_processing.workflow.resolve_config_path",
                 return_value=Path("/fake/config.yaml"),
             ),
+            patch(
+                "eurostat_energy_balance_processing.workflow.IAMC_Creator"
+            ) as mock_iamc_creator,
         ):
             mock_args = MagicMock()
             mock_args.config = None
@@ -110,3 +113,5 @@ class TestMain:
 
         mock_process.assert_called_once()
         mock_processor.run.assert_called_once()
+        mock_iamc_creator.assert_called_once_with(mock_processor)
+        mock_iamc_creator.return_value.write_industry_non_energy_shares.assert_called_once()
